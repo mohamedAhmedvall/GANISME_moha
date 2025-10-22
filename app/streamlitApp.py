@@ -7,6 +7,15 @@ import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
+# Répertoire de ce fichier
+HERE = Path(__file__).resolve().parent
+# Si ton dossier "model" est à la racine du repo (soeur de "app/"):
+CKPT_PATH = (HERE / ".." / "model" / "checkpoints" / "dcgan_64.pt").resolve()
+
+st.write("CWD:", Path().resolve())
+st.write("Checkpoint attendu:", CKPT_PATH)
+st.write("Existe ?", CKPT_PATH.exists())
+
 # === CONFIGURATION DE L'APPLICATION ===
 st.set_page_config(page_title="ArtGAN Generator", layout="centered")
 st.title("Générateur d'images avec GAN")
@@ -14,8 +23,7 @@ st.title("Générateur d'images avec GAN")
 # === CHARGER LE MODÈLE ===
 @st.cache_resource
 def load_trainer():
-    trainer = ArtGANTrainer.from_checkpoint("model/checkpoints/dcgan_64.pt",
-device="cpu")
+    trainer = ArtGANTrainer.from_checkpoint(str(CKPT_PATH), map_location="cpu")
     return trainer
 
 trainer = load_trainer()
