@@ -1,3 +1,4 @@
+from pathlib import Path
 import streamlit as st
 import matplotlib.pyplot as plt
 from torchvision.utils import make_grid
@@ -5,16 +6,9 @@ from src.gan_trainer import ArtGANTrainer
 import torch
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+from huggingface_hub import hf_hub_download 
 
 
-# Répertoire de ce fichier
-HERE = Path(__file__).resolve().parent
-# Si ton dossier "model" est à la racine du repo (soeur de "app/"):
-CKPT_PATH = (HERE / ".." / "model" / "checkpoints" / "dcgan_64.pt").resolve()
-
-st.write("CWD:", Path().resolve())
-st.write("Checkpoint attendu:", CKPT_PATH)
-st.write("Existe ?", CKPT_PATH.exists())
 
 # === CONFIGURATION DE L'APPLICATION ===
 st.set_page_config(page_title="ArtGAN Generator", layout="centered")
@@ -23,8 +17,12 @@ st.title("Générateur d'images avec GAN")
 # === CHARGER LE MODÈLE ===
 @st.cache_resource
 def load_trainer():
-    trainer = ArtGANTrainer.from_checkpoint(str(CKPT_PATH), map_location="cpu")
-    return trainer
+    model_path = hf_hub_download(
+        repo_id="movall/gan64",
+        filename="dcgan_64.pt",
+        token=os.environ.get("HF_TOKEN")
+    )
+    return ArtGANTrainer.from_checkpoint(model_path, device="cpu")
 
 trainer = load_trainer()
 
