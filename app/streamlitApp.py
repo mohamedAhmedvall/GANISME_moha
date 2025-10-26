@@ -6,23 +6,26 @@ from src.gan_trainer import ArtGANTrainer
 import torch
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-from huggingface_hub import hf_hub_download 
-
-
+from huggingface_hub import hf_hub_download
 
 # === CONFIGURATION DE L'APPLICATION ===
 st.set_page_config(page_title="ArtGAN Generator", layout="centered")
-st.title("Générateur d'images avec GAN")
+st.title("🎨 Générateur d'images avec GAN")
 
 # === CHARGER LE MODÈLE ===
 @st.cache_resource
 def load_trainer():
-    model_path = hf_hub_download(
-        repo_id="movall/gan64",
-        filename="dcgan_64.pt",
-        token=os.environ.get("HF_TOKEN")
-    )
-    return ArtGANTrainer.from_checkpoint(model_path, device="cpu")
+    try:
+        model_path = hf_hub_download(
+            repo_id="movall/gan64",   # ton dépôt Hugging Face
+            filename="dcgan_64.pt"    # le nom exact du fichier
+        )
+        st.success("✅ Modèle chargé depuis Hugging Face")
+        return ArtGANTrainer.from_checkpoint(model_path, device="cpu")
+
+    except Exception as e:
+        st.error(f"❌ Erreur lors du chargement du modèle : {e}")
+        st.stop()
 
 trainer = load_trainer()
 
@@ -42,7 +45,6 @@ if st.button("🖼️ Générer"):
             ax.imshow(grid.permute(1, 2, 0).numpy())
             ax.axis("off")
             st.pyplot(fig)
-
         else:
             for img in images:
                 fig, ax = plt.subplots()
